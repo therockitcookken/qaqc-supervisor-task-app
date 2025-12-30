@@ -26,8 +26,7 @@ function uid() {
 }
 
 export function TaskForm({
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  mode: _mode,
+  mode,
   workspaceId,
   initial,
   onCancel,
@@ -150,7 +149,7 @@ export function TaskForm({
           <select
             className="select"
             value={form.category}
-            onChange={(e) => update("category", e.target.value as (typeof TASK_CATEGORIES)[number])}
+            onChange={(e) => update("category", e.target.value as any)}
           >
             {TASK_CATEGORIES.map((x) => (
               <option key={x} value={x}>
@@ -165,7 +164,7 @@ export function TaskForm({
           <select
             className="select"
             value={form.status}
-            onChange={(e) => update("status", e.target.value as (typeof TASK_STATUSES)[number])}
+            onChange={(e) => update("status", e.target.value as any)}
           >
             {TASK_STATUSES.map((x) => (
               <option key={x} value={x}>
@@ -180,7 +179,7 @@ export function TaskForm({
           <select
             className="select"
             value={form.priority}
-            onChange={(e) => update("priority", e.target.value as (typeof TASK_PRIORITIES)[number])}
+            onChange={(e) => update("priority", e.target.value as any)}
           >
             {TASK_PRIORITIES.map((x) => (
               <option key={x} value={x}>

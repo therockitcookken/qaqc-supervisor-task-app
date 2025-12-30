@@ -172,10 +172,10 @@ export function TaskTable({
                     <Badge tone="neutral">{t.category}</Badge>
                   </td>
                   <td className="px-4 py-3">
-                    <Badge tone={toneStatus as ("neutral" | "success" | "warn" | "danger" | "info" | undefined)}>{t.status}</Badge>
+                    <Badge tone={toneStatus as unknown}>{t.status}</Badge>
                   </td>
                   <td className="px-4 py-3">
-                    <Badge tone={tonePrio as ("neutral" | "success" | "warn" | "danger" | "info" | undefined)}>{t.priority}</Badge>
+                    <Badge tone={tonePrio as unknown}>{t.priority}</Badge>
                   </td>
                   <td className="px-4 py-3">
                     <div className={cn(overdue ? "font-semibold text-rose-700 dark:text-rose-300" : "")}>{t.dueDate}</div>

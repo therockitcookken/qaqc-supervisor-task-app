@@ -13,7 +13,7 @@
     "node": ">=20 <23"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.49.0",
+    "@supabase/supabase-js": "^2.89.0",
     "clsx": "^2.1.1",
     "lucide-react": "^0.469.0",
     "next": "14.2.35",

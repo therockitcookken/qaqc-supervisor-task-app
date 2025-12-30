@@ -2,11 +2,6 @@ import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import type { Task } from "@/lib/types";
 
-function asRecord(v: unknown): Record<string, unknown> | null {
-  return typeof v === 'object' && v !== null ? (v as Record<string, unknown>) : null;
-}
-
-
 function getSupabase() {
   const url = process.env.SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY;
@@ -43,11 +38,7 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  const tasks: Task[] = (data ?? []).flatMap((row: unknown) => {
-    const r = asRecord(row);
-    const payload = r ? (r["payload"] as unknown) : null;
-    return payload ? [payload as Task] : [];
-  });
+  const tasks: Task[] = (data ?? []).map((row: unknown) => row.payload as Task);
   const serverTime = new Date().toISOString();
   return NextResponse.json({ tasks, serverTime });
 }

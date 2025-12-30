@@ -22,6 +22,7 @@ const TaskSchema = z.object({
 });
 
 function uid() {
+  void _mode;
   return (globalThis.crypto?.randomUUID?.() ?? `${Date.now()}_${Math.random().toString(16).slice(2)}`);
 }
 
@@ -150,7 +151,7 @@ export function TaskForm({
           <select
             className="select"
             value={form.category}
-            onChange={(e) => update("category", e.target.value as (typeof TASK_CATEGORIES)[number])}
+            onChange={(e) => update("category", e.target.value as unknown)}
           >
             {TASK_CATEGORIES.map((x) => (
               <option key={x} value={x}>
@@ -165,7 +166,7 @@ export function TaskForm({
           <select
             className="select"
             value={form.status}
-            onChange={(e) => update("status", e.target.value as (typeof TASK_STATUSES)[number])}
+            onChange={(e) => update("status", e.target.value as unknown)}
           >
             {TASK_STATUSES.map((x) => (
               <option key={x} value={x}>
@@ -180,7 +181,7 @@ export function TaskForm({
           <select
             className="select"
             value={form.priority}
-            onChange={(e) => update("priority", e.target.value as (typeof TASK_PRIORITIES)[number])}
+            onChange={(e) => update("priority", e.target.value as unknown)}
           >
             {TASK_PRIORITIES.map((x) => (
               <option key={x} value={x}>

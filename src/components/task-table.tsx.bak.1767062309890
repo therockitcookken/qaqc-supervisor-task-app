@@ -74,7 +74,7 @@ export function TaskTable({
         <select
           className="select"
           value={filters.status}
-          onChange={(e) => onFilters({ ...filters, status: e.target.value as ("" | (typeof TASK_STATUSES)[number]) })}
+          onChange={(e) => onFilters({ ...filters, status: e.target.value as any })}
         >
           <option value="">All status</option>
           {TASK_STATUSES.map((x) => (
@@ -87,7 +87,7 @@ export function TaskTable({
         <select
           className="select"
           value={filters.category}
-          onChange={(e) => onFilters({ ...filters, category: e.target.value as ("" | (typeof TASK_CATEGORIES)[number]) })}
+          onChange={(e) => onFilters({ ...filters, category: e.target.value as any })}
         >
           <option value="">All category</option>
           {TASK_CATEGORIES.map((x) => (
@@ -100,7 +100,7 @@ export function TaskTable({
         <select
           className="select"
           value={filters.priority}
-          onChange={(e) => onFilters({ ...filters, priority: e.target.value as ("" | (typeof TASK_PRIORITIES)[number]) })}
+          onChange={(e) => onFilters({ ...filters, priority: e.target.value as any })}
         >
           <option value="">All priority</option>
           {TASK_PRIORITIES.map((x) => (
@@ -172,10 +172,10 @@ export function TaskTable({
                     <Badge tone="neutral">{t.category}</Badge>
                   </td>
                   <td className="px-4 py-3">
-                    <Badge tone={toneStatus as ("neutral" | "success" | "warn" | "danger" | "info" | undefined)}>{t.status}</Badge>
+                    <Badge tone={toneStatus as any}>{t.status}</Badge>
                   </td>
                   <td className="px-4 py-3">
-                    <Badge tone={tonePrio as ("neutral" | "success" | "warn" | "danger" | "info" | undefined)}>{t.priority}</Badge>
+                    <Badge tone={tonePrio as any}>{t.priority}</Badge>
                   </td>
                   <td className="px-4 py-3">
                     <div className={cn(overdue ? "font-semibold text-rose-700 dark:text-rose-300" : "")}>{t.dueDate}</div>

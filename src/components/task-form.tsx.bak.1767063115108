@@ -165,7 +165,7 @@ export function TaskForm({
           <select
             className="select"
             value={form.status}
-            onChange={(e) => update("status", e.target.value as (typeof TASK_STATUSES)[number])}
+            onChange={(e) => update("status", e.target.value as unknown)}
           >
             {TASK_STATUSES.map((x) => (
               <option key={x} value={x}>
@@ -180,7 +180,7 @@ export function TaskForm({
           <select
             className="select"
             value={form.priority}
-            onChange={(e) => update("priority", e.target.value as (typeof TASK_PRIORITIES)[number])}
+            onChange={(e) => update("priority", e.target.value as unknown)}
           >
             {TASK_PRIORITIES.map((x) => (
               <option key={x} value={x}>
