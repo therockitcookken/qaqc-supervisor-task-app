@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+﻿import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import type { Task } from "@/lib/types";
 
@@ -72,7 +72,7 @@ export async function POST(req: Request) {
   const now = new Date().toISOString();
 
   const rows = tasks.map((t) => {
-    const updatedAt = t.updatedAt || now;
+    const updatedAt = t.updated_at ?? now;
     return {
       id: t.id,
       workspace_id: workspaceId,
@@ -92,3 +92,4 @@ export async function POST(req: Request) {
 
   return NextResponse.json({ pushed: rows.length, pulled: 0, serverTime: now });
 }
+
