@@ -1,0 +1,294 @@
+"use client";
+
+import * as React from "react";
+import { z } from "zod";
+import { TASK_CATEGORIES, TASK_PRIORITIES, TASK_STATUSES, type Task } from "@/lib/types";
+import { normalizeTags } from "@/lib/storage";
+import { cn, todayYMD, toISO } from "@/lib/utils";
+
+const TaskSchema = z.object({
+  title: z.string().min(1, "Title required").max(120),
+  description: z.string().max(4000).optional().default(""),
+  category: z.enum(TASK_CATEGORIES),
+  status: z.enum(TASK_STATUSES),
+  priority: z.enum(TASK_PRIORITIES),
+  owner: z.string().max(60).optional().default(""),
+  dept: z.string().max(60).optional().default(""),
+  dueDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid due date").optional().default(todayYMD()),
+  tags: z.string().optional().default(""),
+  evidenceUrl: z.string().url().optional().or(z.literal("")),
+  relatedNcNo: z.string().max(50).optional().or(z.literal("")),
+  relatedCapaNo: z.string().max(50).optional().or(z.literal("")),
+});
+
+function uid() {
+  return (globalThis.crypto?.randomUUID?.() ?? `${Date.now()}_${Math.random().toString(16).slice(2)}`);
+}
+
+export function TaskForm({
+  mode,
+  workspaceId,
+  initial,
+  onCancel,
+  onSave,
+}: {
+  mode: "create" | "edit";
+  workspaceId: string;
+  initial?: Task;
+  onCancel: () => void;
+  onSave: (t: Task) => void;
+}) {
+  const [err, setErr] = React.useState<string | null>(null);
+  const [form, setForm] = React.useState(() => {
+    const base = initial ?? {
+      id: uid(),
+      workspaceId,
+      title: "",
+      description: "",
+      category: "NC" as const,
+      status: "Backlog" as const,
+      priority: "Medium" as const,
+      owner: "",
+      dept: "",
+      dueDate: todayYMD(),
+      tags: [],
+      evidenceUrl: "",
+      relatedNcNo: "",
+      relatedCapaNo: "",
+      createdAt: toISO(new Date()),
+      updatedAt: toISO(new Date()),
+    };
+
+    return {
+      title: base.title,
+      description: base.description,
+      category: base.category,
+      status: base.status,
+      priority: base.priority,
+      owner: base.owner,
+      dept: base.dept,
+      dueDate: base.dueDate,
+      tags: (base.tags ?? []).join(", "),
+      evidenceUrl: base.evidenceUrl ?? "",
+      relatedNcNo: base.relatedNcNo ?? "",
+      relatedCapaNo: base.relatedCapaNo ?? "",
+    };
+  });
+
+  const baseTask = initial;
+
+  function update<K extends keyof typeof form>(k: K, v: (typeof form)[K]) {
+    setForm((p) => ({ ...p, [k]: v }));
+  }
+
+  function buildTask() {
+    const parsed = TaskSchema.safeParse(form);
+    if (!parsed.success) {
+      const msg = parsed.error.issues?.[0]?.message ?? "Invalid form";
+      setErr(msg);
+      return null;
+    }
+
+    const now = toISO(new Date());
+    const data = parsed.data;
+
+    const out: Task = {
+      id: baseTask?.id ?? uid(),
+      workspaceId,
+      title: data.title,
+      description: data.description ?? "",
+      category: data.category,
+      status: data.status,
+      priority: data.priority,
+      owner: data.owner ?? "",
+      dept: data.dept ?? "",
+      dueDate: data.dueDate ?? todayYMD(),
+      tags: normalizeTags(data.tags ?? ""),
+      evidenceUrl: data.evidenceUrl || undefined,
+      relatedNcNo: data.relatedNcNo || undefined,
+      relatedCapaNo: data.relatedCapaNo || undefined,
+      createdAt: baseTask?.createdAt ?? now,
+      updatedAt: now,
+    };
+
+    setErr(null);
+    return out;
+  }
+
+  return (
+    <div className="space-y-4">
+      {err ? (
+        <div className="rounded-xl border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700 dark:border-rose-500/30 dark:bg-rose-500/10 dark:text-rose-300">
+          {err}
+        </div>
+      ) : null}
+
+      <div className="grid gap-3 sm:grid-cols-2">
+        <label className="sm:col-span-2">
+          <div className="mb-1 text-sm font-medium">Tiêu đề / Title *</div>
+          <input
+            className="input"
+            value={form.title}
+            onChange={(e) => update("title", e.target.value)}
+            placeholder="VD: Close 8D for leak escape - Customer A"
+          />
+        </label>
+
+        <label className="sm:col-span-2">
+          <div className="mb-1 text-sm font-medium">Mô tả / Description</div>
+          <textarea
+            className={cn("input min-h-[110px]")}
+            value={form.description}
+            onChange={(e) => update("description", e.target.value)}
+            placeholder="Context, scope, actions, owner, due date, evidence..."
+          />
+        </label>
+
+        <label>
+          <div className="mb-1 text-sm font-medium">Category</div>
+          <select
+            className="select"
+            value={form.category}
+            onChange={(e) => update("category", e.target.value as any)}
+          >
+            {TASK_CATEGORIES.map((x) => (
+              <option key={x} value={x}>
+                {x}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <label>
+          <div className="mb-1 text-sm font-medium">Status</div>
+          <select
+            className="select"
+            value={form.status}
+            onChange={(e) => update("status", e.target.value as any)}
+          >
+            {TASK_STATUSES.map((x) => (
+              <option key={x} value={x}>
+                {x}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <label>
+          <div className="mb-1 text-sm font-medium">Priority</div>
+          <select
+            className="select"
+            value={form.priority}
+            onChange={(e) => update("priority", e.target.value as any)}
+          >
+            {TASK_PRIORITIES.map((x) => (
+              <option key={x} value={x}>
+                {x}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <label>
+          <div className="mb-1 text-sm font-medium">Due date</div>
+          <input
+            className="input"
+            type="date"
+            value={form.dueDate}
+            onChange={(e) => update("dueDate", e.target.value)}
+          />
+        </label>
+
+        <label>
+          <div className="mb-1 text-sm font-medium">Owner</div>
+          <input
+            className="input"
+            value={form.owner}
+            onChange={(e) => update("owner", e.target.value)}
+            placeholder="QA Supervisor / Engineer"
+          />
+        </label>
+
+        <label>
+          <div className="mb-1 text-sm font-medium">Department</div>
+          <input
+            className="input"
+            value={form.dept}
+            onChange={(e) => update("dept", e.target.value)}
+            placeholder="QA / Production / Eng"
+          />
+        </label>
+
+        <label className="sm:col-span-2">
+          <div className="mb-1 text-sm font-medium">Tags</div>
+          <input
+            className="input"
+            value={form.tags}
+            onChange={(e) => update("tags", e.target.value)}
+            placeholder="VD: leak, seam, audit, LPA"
+          />
+          <div className="mt-1 text-xs text-gray-500 dark:text-slate-400">
+            Ngăn cách bằng dấu phẩy.
+          </div>
+        </label>
+
+        <label className="sm:col-span-2">
+          <div className="mb-1 text-sm font-medium">Evidence URL (optional)</div>
+          <input
+            className="input"
+            value={form.evidenceUrl}
+            onChange={(e) => update("evidenceUrl", e.target.value)}
+            placeholder="Link ảnh/video/Drive (nếu có)"
+          />
+        </label>
+
+        <label>
+          <div className="mb-1 text-sm font-medium">Related NC No.</div>
+          <input
+            className="input"
+            value={form.relatedNcNo}
+            onChange={(e) => update("relatedNcNo", e.target.value)}
+            placeholder="NC-2025-0012"
+          />
+        </label>
+
+        <label>
+          <div className="mb-1 text-sm font-medium">Related CAPA No.</div>
+          <input
+            className="input"
+            value={form.relatedCapaNo}
+            onChange={(e) => update("relatedCapaNo", e.target.value)}
+            placeholder="CAPA-2025-0008"
+          />
+        </label>
+      </div>
+
+      <div className="flex flex-wrap items-center justify-end gap-2">
+        <button className="btn-ghost" onClick={onCancel}>
+          Cancel
+        </button>
+        <button
+          className="btn-primary"
+          onClick={() => {
+            const t = buildTask();
+            if (t) onSave(t);
+          }}
+        >
+          Save
+        </button>
+        <button
+          className="btn-primary"
+          onClick={() => {
+            const t = buildTask();
+            if (t) {
+              onSave(t);
+              onCancel();
+            }
+          }}
+        >
+          Save & Close
+        </button>
+      </div>
+    </div>
+  );
+}

@@ -1,0 +1,217 @@
+"use client";
+
+import * as React from "react";
+import { Pencil, Trash2 } from "lucide-react";
+import type { Task, TaskCategory, TaskPriority, TaskStatus } from "@/lib/types";
+import { TASK_CATEGORIES, TASK_PRIORITIES, TASK_STATUSES } from "@/lib/types";
+import { isOverdue, cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
+
+export type Filters = {
+  q: string;
+  status: TaskStatus | "";
+  category: TaskCategory | "";
+  priority: TaskPriority | "";
+  onlyOverdue: boolean;
+};
+
+export function TaskTable({
+  tasks,
+  filters,
+  onFilters,
+  onEdit,
+  onDelete,
+}: {
+  tasks: Task[];
+  filters: Filters;
+  onFilters: (f: Filters) => void;
+  onEdit: (t: Task) => void;
+  onDelete: (id: string) => void;
+}) {
+  const filtered = React.useMemo(() => {
+    const q = filters.q.trim().toLowerCase();
+    return tasks
+      .filter((t) => {
+        if (filters.status && t.status !== filters.status) return false;
+        if (filters.category && t.category !== filters.category) return false;
+        if (filters.priority && t.priority !== filters.priority) return false;
+        if (filters.onlyOverdue && !isOverdue(t.dueDate, t.status)) return false;
+        if (!q) return true;
+        const hay = [
+          t.title,
+          t.description,
+          t.owner,
+          t.dept,
+          t.category,
+          t.status,
+          t.priority,
+          ...(t.tags ?? []),
+          t.relatedNcNo ?? "",
+          t.relatedCapaNo ?? "",
+        ]
+          .join(" ")
+          .toLowerCase();
+        return hay.includes(q);
+      })
+      .sort((a, b) => {
+        const ad = a.dueDate || "9999-12-31";
+        const bd = b.dueDate || "9999-12-31";
+        if (ad !== bd) return ad.localeCompare(bd);
+        return b.updatedAt.localeCompare(a.updatedAt);
+      });
+  }, [tasks, filters]);
+
+  return (
+    <div className="space-y-3">
+      <div className="grid gap-2 md:grid-cols-5">
+        <input
+          className="input md:col-span-2"
+          value={filters.q}
+          onChange={(e) => onFilters({ ...filters, q: e.target.value })}
+          placeholder="Search title / tags / owner / NC / CAPA..."
+        />
+
+        <select
+          className="select"
+          value={filters.status}
+          onChange={(e) => onFilters({ ...filters, status: e.target.value as any })}
+        >
+          <option value="">All status</option>
+          {TASK_STATUSES.map((x) => (
+            <option key={x} value={x}>
+              {x}
+            </option>
+          ))}
+        </select>
+
+        <select
+          className="select"
+          value={filters.category}
+          onChange={(e) => onFilters({ ...filters, category: e.target.value as any })}
+        >
+          <option value="">All category</option>
+          {TASK_CATEGORIES.map((x) => (
+            <option key={x} value={x}>
+              {x}
+            </option>
+          ))}
+        </select>
+
+        <select
+          className="select"
+          value={filters.priority}
+          onChange={(e) => onFilters({ ...filters, priority: e.target.value as any })}
+        >
+          <option value="">All priority</option>
+          {TASK_PRIORITIES.map((x) => (
+            <option key={x} value={x}>
+              {x}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <label className="inline-flex items-center gap-2 text-sm text-gray-600 dark:text-slate-300">
+        <input
+          type="checkbox"
+          checked={filters.onlyOverdue}
+          onChange={(e) => onFilters({ ...filters, onlyOverdue: e.target.checked })}
+        />
+        Chỉ hiển thị overdue
+      </label>
+
+      <div className="overflow-auto rounded-2xl border border-gray-200/70 dark:border-slate-700/60">
+        <table className="min-w-[980px] w-full text-sm">
+          <thead className="bg-gray-50 text-left text-xs uppercase tracking-wide text-gray-600 dark:bg-slate-800 dark:text-slate-200">
+            <tr>
+              <th className="px-4 py-3">Title</th>
+              <th className="px-4 py-3">Cat</th>
+              <th className="px-4 py-3">Status</th>
+              <th className="px-4 py-3">Priority</th>
+              <th className="px-4 py-3">Due</th>
+              <th className="px-4 py-3">Owner</th>
+              <th className="px-4 py-3">Tags</th>
+              <th className="px-4 py-3 text-right">Actions</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {filtered.length === 0 ? (
+              <tr>
+                <td className="px-4 py-6 text-gray-500 dark:text-slate-400" colSpan={8}>
+                  No tasks match filters.
+                </td>
+              </tr>
+            ) : null}
+
+            {filtered.map((t) => {
+              const overdue = isOverdue(t.dueDate, t.status);
+              const toneStatus =
+                t.status === "Done" ? "success" : t.status === "Blocked" ? "danger" : t.status === "OnHold" ? "warn" : "info";
+              const tonePrio = t.priority === "Critical" ? "danger" : t.priority === "High" ? "warn" : t.priority === "Medium" ? "info" : "neutral";
+
+              return (
+                <tr
+                  key={t.id}
+                  className={cn(
+                    "border-t border-gray-200/70 bg-white hover:bg-gray-50 dark:border-slate-700/60 dark:bg-slate-900 dark:hover:bg-slate-800",
+                    overdue ? "bg-rose-50/60 dark:bg-rose-500/10" : ""
+                  )}
+                >
+                  <td className="px-4 py-3">
+                    <div className="font-medium">{t.title}</div>
+                    {t.description ? <div className="mt-1 line-clamp-2 text-xs text-gray-500 dark:text-slate-400">{t.description}</div> : null}
+                    {(t.relatedNcNo || t.relatedCapaNo) ? (
+                      <div className="mt-1 flex flex-wrap gap-1 text-xs">
+                        {t.relatedNcNo ? <span className="text-gray-500 dark:text-slate-400">NC: {t.relatedNcNo}</span> : null}
+                        {t.relatedCapaNo ? <span className="text-gray-500 dark:text-slate-400">CAPA: {t.relatedCapaNo}</span> : null}
+                      </div>
+                    ) : null}
+                  </td>
+                  <td className="px-4 py-3">
+                    <Badge tone="neutral">{t.category}</Badge>
+                  </td>
+                  <td className="px-4 py-3">
+                    <Badge tone={toneStatus as any}>{t.status}</Badge>
+                  </td>
+                  <td className="px-4 py-3">
+                    <Badge tone={tonePrio as any}>{t.priority}</Badge>
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className={cn(overdue ? "font-semibold text-rose-700 dark:text-rose-300" : "")}>{t.dueDate}</div>
+                  </td>
+                  <td className="px-4 py-3">
+                    <div>{t.owner || "-"}</div>
+                    <div className="text-xs text-gray-500 dark:text-slate-400">{t.dept || ""}</div>
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="flex flex-wrap gap-1">
+                      {(t.tags ?? []).slice(0, 6).map((tag) => (
+                        <Badge key={tag} className="text-xs">{tag}</Badge>
+                      ))}
+                      {(t.tags ?? []).length > 6 ? <Badge className="text-xs">+{(t.tags ?? []).length - 6}</Badge> : null}
+                    </div>
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="flex justify-end gap-2">
+                      <button className="btn-ghost" onClick={() => onEdit(t)} title="Edit">
+                        <Pencil className="h-4 w-4" />
+                      </button>
+                      <button className="btn-ghost" onClick={() => onDelete(t.id)} title="Delete">
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+
+      <div className="text-xs text-gray-500 dark:text-slate-400">
+        Showing: {filtered.length} / {tasks.length}
+      </div>
+    </div>
+  );
+}
