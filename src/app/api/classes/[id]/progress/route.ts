@@ -1,0 +1,1 @@
+import { prisma } from "@/lib/prisma"; import { ok } from "@/lib/response"; export async function GET(_:Request,{params}:{params:{id:string}}){const members=await prisma.classroomMember.findMany({where:{classroomId:params.id},include:{user:true}}); return ok(members);}

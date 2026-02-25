@@ -1,0 +1,1 @@
+import { prisma } from "@/lib/prisma"; import { ok, fail } from "@/lib/response"; export async function GET(_:Request,{params}:{params:{attemptId:string}}){const a=await prisma.attempt.findUnique({where:{id:params.attemptId},include:{answers:{include:{question:true}}}}); if(!a) return fail(404,"not_found"); return ok(a);}

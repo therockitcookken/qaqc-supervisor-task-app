@@ -1,0 +1,1 @@
+import { prisma } from "@/lib/prisma"; import { ok, fail } from "@/lib/response"; export async function POST(req:Request){const {lessonId}=await req.json(); if(!lessonId) return fail(400,"invalid_input"); const questions=await prisma.question.findMany({where:{lessonId}}); return ok({questions});}

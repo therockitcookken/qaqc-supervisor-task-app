@@ -1,0 +1,1 @@
+import { prisma } from "@/lib/prisma"; import { ok, fail } from "@/lib/response"; export async function POST(req:Request){const b=await req.json(); if(!b.classroomId||!b.lessonId) return fail(400,"invalid_input"); return ok(await prisma.assignment.create({data:b}));}

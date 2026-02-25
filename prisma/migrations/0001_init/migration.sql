@@ -1,0 +1,1 @@
+-- Use `pnpm prisma:migrate` to generate canonical migration SQL for your local platform.

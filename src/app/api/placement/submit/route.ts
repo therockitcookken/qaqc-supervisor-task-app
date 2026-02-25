@@ -1,0 +1,2 @@
+import { ok, fail } from "@/lib/response"; import { scoreQuiz } from "@/lib/quiz"; import { prisma } from "@/lib/prisma";
+export async function POST(req:Request){const body=await req.json(); if(!body.questions||!body.answers) return fail(400,"invalid_input"); const s=scoreQuiz(body.questions,body.answers); const cefr=s.score<20?"A1":s.score<40?"A2":s.score<60?"B1":s.score<80?"B2":"C1"; await prisma.placementTest.create({data:{userId:body.userId||"",score:s.score,cefr}}).catch(()=>{}); return ok({score:s.score,cefr});}

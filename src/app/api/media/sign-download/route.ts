@@ -1,0 +1,1 @@
+import { signDownload } from "@/lib/minio"; import { ok, fail } from "@/lib/response"; export async function GET(req:Request){const key=new URL(req.url).searchParams.get("key"); if(!key) return fail(400,"invalid_input"); return ok({url:await signDownload(key)});}
