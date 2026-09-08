@@ -1,0 +1,1 @@
+import { prisma } from "@/lib/prisma"; import { ok } from "@/lib/response"; export async function POST(req:Request){const {id}=await req.json(); return ok(await prisma.notification.update({where:{id},data:{readAt:new Date()}}));}

@@ -1,0 +1,1 @@
+import { prisma } from "@/lib/prisma"; import { ok } from "@/lib/response"; export async function GET(req:Request){const userId=new URL(req.url).searchParams.get("userId")||""; return ok(await prisma.notification.findMany({where:{userId}}));}

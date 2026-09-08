@@ -1,0 +1,1 @@
+import { prisma } from "@/lib/prisma"; import { ok, fail } from "@/lib/response"; export async function POST(req:Request){const b=await req.json(); const c=await prisma.classroom.findFirst({where:{inviteCode:b.inviteCode}}); if(!c) return fail(404,"invalid_code"); return ok(await prisma.classroomMember.create({data:{classroomId:c.id,userId:b.userId,role:"Student"}}));}

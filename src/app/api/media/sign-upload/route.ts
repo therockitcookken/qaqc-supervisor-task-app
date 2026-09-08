@@ -1,0 +1,1 @@
+import { signUpload } from "@/lib/minio"; import { ok, fail } from "@/lib/response"; export async function POST(req:Request){const {key}=await req.json(); if(!key) return fail(400,"invalid_input"); return ok({url:await signUpload(key)});}

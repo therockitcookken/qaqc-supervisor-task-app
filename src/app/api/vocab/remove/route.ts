@@ -1,0 +1,1 @@
+import { prisma } from "@/lib/prisma"; import { ok, fail } from "@/lib/response"; export async function POST(req:Request){const {id,userId}=await req.json(); if(!id||!userId) return fail(400,"invalid_input"); await prisma.vocabItem.deleteMany({where:{id,userId}}); return ok({removed:true});}

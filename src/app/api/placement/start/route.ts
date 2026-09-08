@@ -1,0 +1,1 @@
+import { prisma } from "@/lib/prisma"; import { ok } from "@/lib/response"; export async function POST(){ const qs=await prisma.question.findMany({where:{tags:{has:"placement"}},take:20}); return ok({questions:qs}); }

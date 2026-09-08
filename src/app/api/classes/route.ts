@@ -1,0 +1,1 @@
+import { prisma } from "@/lib/prisma"; import { ok, fail } from "@/lib/response"; export async function POST(req:Request){const b=await req.json(); if(!b.name||!b.teacherId) return fail(400,"invalid_input"); return ok(await prisma.classroom.create({data:{name:b.name,teacherId:b.teacherId,inviteCode:Math.random().toString(36).slice(2,8)}}));}
